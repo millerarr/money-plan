@@ -93,6 +93,7 @@ body[data-effects="off"] #ambient{display:none}
   <div class="card"><div class="muted">main bank</div><div class="metric" id="mBank">£170.00</div><div class="muted">main balance</div></div>
   <div class="card"><div class="muted">Kenya savings</div><div class="metric" id="mKenya">£45.00</div><div class="muted">goal £200</div></div>
   <div class="card"><div class="muted">iPhone fund</div><div class="metric" id="mPhone">£0.00</div><div class="muted" id="phoneGoalLabel">goal £120</div></div>
+  <div class="card"><div class="muted">cash on hand</div><div class="metric" id="mCash">£0.00</div><div class="muted">physical cash</div></div>
   <div class="card"><div class="muted">reselling fund</div><div class="metric" id="mResale">£10.00</div><div class="muted">working budget</div></div>
  </div>
  <div class="layout">
@@ -112,7 +113,8 @@ body[data-effects="off"] #ambient{display:none}
 <section class="view hidden" id="budgets">
  <div class="panel"><h2>your pots</h2><div id="potList"></div></div>
  <div class="panel"><h2>edit balances & goals</h2><p class="muted">use this to enter your real starting balances. changes are saved to your tracker.</p><div class="grid2" id="balanceInputs"></div><div class="actions"><button id="saveBalances">save changes</button></div></div>
- <div class="panel"><h2>weekly £10 plan</h2><div class="potrow row"><span>Kenya</span><b>£2</b></div><div class="potrow row"><span>Reselling</span><b>£2</b></div><div class="potrow row"><span>Own clothes</span><b>£1</b></div><div class="potrow row"><span>iPhone</span><b>£3</b></div><div class="potrow row"><span>left in main bank</span><b>£2</b></div></div>
+ <div class="panel"><h2>weekly £10 allocation</h2><p class="muted">edit the amounts below. total must equal £10. the sunday button uses this plan, only when you press it.</p><div class="grid2" id="allocationInputs"></div><p class="status" id="allocationTotal"></p><div class="actions"><button id="saveAllocation">save weekly allocation</button></div></div>
+ <div class="panel"><h2>🏦 savings interest · 2.80% AER</h2><p class="muted">estimated monthly interest for kenya, phone, reselling and clothes pots. main bank and physical cash excluded. actual interest may differ because banks calculate using daily balances and their own payment dates. estimates do not change your real balances.</p><div id="interestForecast"></div><p class="status" id="interestStatus"></p><div class="actions"><button id="recordInterest">record actual interest received</button></div><p class="muted">only record interest after it appears in monzo. enter the actual amounts to avoid double-counting.</p></div>
 </section>
 <section class="view hidden" id="settings">
  <div class="panel"><h2>🎨 appearance</h2><p class="muted">choose a look for your Money Plan dashboard. your choice is saved on this device.</p>
@@ -126,6 +128,7 @@ body[data-effects="off"] #ambient{display:none}
   <label>display mode</label><div class="actions"><button type="button" class="secondary" id="lightMode">☀️ light mode</button><button type="button" class="secondary" id="darkMode">🌙 dark mode</button></div>
   <label for="effectsToggle">animated effects</label><div class="actions"><button type="button" class="secondary" id="effectsToggle" aria-pressed="true">✨ effects on</button></div><p class="status" id="appearanceStatus">Christmas theme · light mode</p>
  </div>
+ <div class="panel"><h2>🔔 reminders & updates</h2><p class="muted">proper background push notifications need a separately deployed push server. enter its URL and VAPID public key after setup. no banking details are sent to that server.</p><label>push server URL</label><input id="pushEndpoint" placeholder="https://your-push-server.example.com"><label>VAPID public key</label><input id="pushKey" placeholder="public push key"><div class="actions"><button id="enableNotifications">enable background push</button><button class="secondary" id="disableNotifications">turn off push</button><button class="secondary" id="checkUpdate">check for app update</button><button class="secondary hidden" id="applyUpdate">install available update</button></div><p class="status" id="pushStatus">push setup required for reminders while closed.</p><p class="status" id="updateStatus">updates install from the same github pages link; no reinstall needed.</p></div>
  <div class="panel"><h2>☁️ cloud sync</h2><p class="muted">connect a Supabase project to keep your tracker in sync across your iPhone and laptop.</p><label>Supabase project URL</label><input id="sbUrl" placeholder="https://your-project.supabase.co"><label>Supabase publishable / anon key</label><input id="sbKey" placeholder="public client key"><div class="actions"><button id="saveCloud">save cloud settings</button><button class="secondary" id="cloudSync">sync now</button></div><p id="cloudStatus" class="status">not configured. your data remains on this device.</p></div>
  <div class="panel"><h2>🏦 monzo connection</h2><p class="notice">monzo access is not enabled in this build. the intended integration is read-only: import account transactions, current balance and pot balances after you approve access with monzo. it will not move money or make payments.</p><div class="actions"><button class="secondary" disabled>connect monzo — setup required</button></div><p class="status">a secure server-side oauth setup and monzo developer client are still required. never paste your monzo password or private keys here.</p></div>
  <div class="panel"><h2>backup & privacy</h2><p class="muted">export a JSON backup before changing devices. local data is stored in this browser. cloud sync requires a configured Supabase project and signed-in user; this starter build does not silently upload your financial data.</p><div class="actions"><button class="secondary" id="export2">download backup</button><button class="warn" id="reset">reset this app</button></div></div>
@@ -133,9 +136,9 @@ body[data-effects="off"] #ambient{display:none}
 </main><footer>money plan · private personal tracker · no banking access is active in this build</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const DEFAULT={balances:{bank:170,kenya:45,phone:0,resale:10,clothes:5},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,cloud:{url:'',key:''},appearance:{theme:'christmas',mode:'light',effects:true}};
-let state;try{state={...DEFAULT,...JSON.parse(localStorage.getItem('moneyPlan')||'{}')};state.balances={...DEFAULT.balances,...state.balances};state.goals={...DEFAULT.goals,...state.goals};state.appearance={...DEFAULT.appearance,...state.appearance};}catch{state=structuredClone(DEFAULT)}
-const pots=[['bank','Main bank'],['kenya','Kenya'],['phone','iPhone'],['resale','Reselling'],['clothes','Own clothes']];
+const DEFAULT={balances:{bank:143.92,kenya:45,phone:0,resale:10,clothes:5,cash:60},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,allocation:{kenya:2,resale:5,phone:3,clothes:0,bank:0},cloud:{url:'',key:''},appearance:{theme:'christmas',mode:'light',effects:true},interest:{aer:2.8,posted:{}},push:{endpoint:'',publicKey:''}};
+let state;try{state={...DEFAULT,...JSON.parse(localStorage.getItem('moneyPlan')||'{}')};state.balances={...DEFAULT.balances,...state.balances};state.goals={...DEFAULT.goals,...state.goals};state.appearance={...DEFAULT.appearance,...state.appearance};state.allocation={...DEFAULT.allocation,...state.allocation};state.interest={...DEFAULT.interest,...state.interest};state.push={...DEFAULT.push,...state.push};}catch{state=structuredClone(DEFAULT)}
+const pots=[['bank','Main bank'],['kenya','Kenya'],['phone','iPhone'],['resale','Reselling'],['clothes','Own clothes'],['cash','Cash on hand']];
 const $=id=>document.getElementById(id),fmt=n=>'£'+Number(n||0).toFixed(2),now=()=>new Date().toISOString();
 function persist(){localStorage.setItem('moneyPlan',JSON.stringify(state));render()}
 function txn(type,description,amount,pot='',extra={}){state.transactions.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),type,description,amount:Number(amount||0),pot,date:now(),source:'manual',...extra})}
@@ -164,8 +167,19 @@ function updateAmbient(){
 }
 function setTheme(theme){state.appearance.theme=theme;persist();applyAppearance()}
 function setMode(mode){state.appearance.mode=mode;persist();applyAppearance()}
+function monthlyInterestEstimate(balance){return balance*(Math.pow(1+Number(state.interest.aer||2.8)/100,1/12)-1)}
+function drawInterest(){
+ const eligible=[['kenya','Kenya'],['phone','Phone'],['resale','Reselling'],['clothes','Own clothes']];
+ $('interestForecast').innerHTML=eligible.map(([k,n])=>`<div class="potrow row"><span>${n} · ${fmt(state.balances[k])}</span><b>~${fmt(monthlyInterestEstimate(state.balances[k]))}/month</b></div>`).join('');
+ $('interestStatus').textContent='estimated monthly total: '+fmt(eligible.reduce((a,[k])=>a+monthlyInterestEstimate(state.balances[k]),0))+' · excludes general spending and cash';
+}
+function recordInterest(){
+ const names=[['kenya','Kenya'],['phone','Phone'],['resale','Reselling'],['clothes','Own clothes']];let added=0;
+ for(const [k,n] of names){const input=prompt('Actual interest credited to '+n+' (£). Leave blank or 0 if none.','0');if(input===null) return;const value=Number(input);if(!Number.isFinite(value)||value<0){alert('invalid amount. no changes saved.');return}if(value>0){state.balances[k]=Math.round((state.balances[k]+value)*100)/100;txn('income','Interest credited · '+n,value,k,{source:'interest'});added+=value}}
+ persist();makeInputs();alert('recorded '+fmt(added)+' interest. do not also add it via balance adjustment.');
+}
 function render(){
- for(const [k] of pots)if($('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale'}[k]||'')))$('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale'}[k])).textContent=fmt(state.balances[k]);
+ for(const [k] of pots)if($('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale',cash:'Cash'}[k]||'')))$('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale',cash:'Cash'}[k])).textContent=fmt(state.balances[k]);
  $('phoneGoalLabel').textContent='goal '+fmt(state.goals.phone);
  $('goals').innerHTML=[['Kenya',state.balances.kenya,state.goals.kenya],['iPhone',state.balances.phone,state.goals.phone],['Reselling',state.balances.resale,state.goals.resale]].map(([n,a,b])=>`<div class="row"><b>${n}</b><span class="muted">${fmt(a)} / ${fmt(b)}</span></div><div class="progress"><div class="bar" style="width:${pct(a,b)}%"></div></div>`).join('');
  $('potList').innerHTML=pots.map(([k,n])=>`<div class="potrow row"><span>${n}</span><b>${fmt(state.balances[k])}</b></div>`).join('');
@@ -175,32 +189,74 @@ function render(){
  const days=Array.from({length:7},(_,i)=>{let d=new Date();d.setDate(d.getDate()-(6-i));return d});
  const vals=days.map(d=>week.filter(t=>t.type==='spend'&&new Date(t.date).toDateString()===d.toDateString()).reduce((s,t)=>s+t.amount,0)),max=Math.max(1,...vals);
  $('chart').innerHTML=days.map((d,i)=>`<div class="barcol"><i style="height:${Math.max(3,vals[i]/max*88)}px"></i><span>${d.toLocaleDateString('en-GB',{weekday:'short'})}</span></div>`).join('');
- drawTransactions();
+ drawTransactions();drawInterest();
  $('syncPill').textContent=state.cloud.url?'cloud configured':'device only';
  $('sbUrl').value=state.cloud.url||'';$('sbKey').value=state.cloud.key||'';
 }
 function txHtml(t){let sign=t.type==='income'?'+':t.type==='spend'?'−':'';let cls=t.type==='income'?'income':t.type==='spend'?'expense':'';let p=pots.find(x=>x[0]===t.pot)?.[1]||t.pot||'account';return `<div class="txn"><div><b>${esc(t.description||'transaction')}</b><small>${new Date(t.date).toLocaleString('en-GB')} · ${esc(p)} · ${t.source==='monzo'?'monzo':'manual'}</small></div><b class="${cls}">${sign}${fmt(t.amount)}</b></div>`}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function drawTransactions(){let q=($('search')?.value||'').toLowerCase(),f=$('filter')?.value||'all';let a=state.transactions.filter(t=>(f==='all'||t.type===f||(f==='monzo'&&t.source==='monzo'))&&(!q||String(t.description).toLowerCase().includes(q)));$('allTxns').innerHTML=a.length?a.map(txHtml).join(''):'<p class="muted">no matching activity.</p>'}
-function sunday(){state.balances.bank+=10;txn('income','Sunday payment',10,'bank');[['kenya',2],['resale',2],['clothes',1],['phone',3]].forEach(([k,v])=>{state.balances.bank-=v;state.balances[k]+=v;txn('transfer','Sunday allocation',v,k,{from:'bank'});});state.sundayCount++;persist()}
+function sunday(){
+ const today=new Date().toLocaleDateString('en-CA');
+ if(state.lastSundayDate===today){alert('you already logged a sunday payment today.');return}
+ if(!confirm('has your £10 actually arrived? this will add £10 income and distribute it using your saved allocation.'))return;
+ state.balances.bank+=10;txn('income','Sunday payment',10,'bank');
+ Object.entries(state.allocation).forEach(([k,v])=>{v=Number(v)||0;if(k==='bank'||!v)return;state.balances.bank-=v;state.balances[k]+=v;txn('transfer','Sunday allocation',v,k,{from:'bank'});});
+ state.lastSundayDate=today;state.sundayCount++;persist();
+}
+function makeAllocationInputs(){
+ $('allocationInputs').innerHTML=[['kenya','Kenya'],['resale','Reselling'],['phone','Phone / personal'],['clothes','Own clothes'],['bank','Leave in bank']].map(([k,n])=>`<div><label for="alloc_${k}">${n} (£)</label><input id="alloc_${k}" type="number" min="0" max="10" step="0.01" value="${state.allocation[k]||0}"></div>`).join('');
+ document.querySelectorAll('[id^="alloc_"]').forEach(el=>el.addEventListener('input',updateAllocationTotal));updateAllocationTotal();
+}
+function updateAllocationTotal(){let total=Object.keys(state.allocation).reduce((sum,k)=>sum+Number($('alloc_'+k)?.value||0),0);$('allocationTotal').textContent='allocated: '+fmt(total)+' of £10.00';}
+function saveAllocation(){let a={},total=0;for(const k of Object.keys(state.allocation)){let v=Number($('alloc_'+k).value);if(!Number.isFinite(v)||v<0){alert('enter non-negative amounts.');return}a[k]=Math.round(v*100)/100;total+=a[k]}if(Math.round(total*100)!==1000){alert('your weekly allocation must total exactly £10.');return}state.allocation=a;persist();$('allocationTotal').textContent='saved: '+fmt(total)+' of £10.00';}
+
 function move(from,to,amount){if(from===to||amount<=0||state.balances[from]<amount){alert('check the pots and amount.');return false}state.balances[from]-=amount;state.balances[to]+=amount;txn('transfer','Money moved',amount,to,{from});persist();return true}
 function addManual(){let type=$('manualType').value,pot=$('manualPot').value,amount=Number($('manualAmount').value),desc=$('manualDesc').value.trim()||'manual entry';if(!amount||amount<=0){alert('enter a valid amount.');return}if(type==='spend'&&state.balances[pot]<amount){alert('not enough in that pot.');return}state.balances[pot]+=type==='income'?amount:-amount;txn(type,desc,amount,pot);$('manualAmount').value='';$('manualDesc').value='';persist()}
 function saveBalances(){pots.forEach(([k])=>{let v=Number($('bal_'+k).value);if(Number.isFinite(v)&&v>=0)state.balances[k]=v});state.goals.phone=Math.max(1,Number($('goal_phone').value)||120);state.goals.kenya=Math.max(1,Number($('goal_kenya').value)||200);state.goals.resale=Math.max(1,Number($('goal_resale').value)||50);txn('adjustment','Balances updated',0,'');persist()}
 function makeInputs(){$('balanceInputs').innerHTML=pots.map(([k,n])=>`<div><label>${n} (£)</label><input type="number" min="0" step=".01" id="bal_${k}" value="${state.balances[k]}"></div>`).join('')+[['phone','iPhone goal'],['kenya','Kenya goal'],['resale','Reselling target']].map(([k,n])=>`<div><label>${n} (£)</label><input type="number" min="1" step="1" id="goal_${k}" value="${state.goals[k]}"></div>`).join('')}
 function download(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='money-plan-backup.json';a.click();URL.revokeObjectURL(u)}
 async function cloudSync(){if(!state.cloud.url||!state.cloud.key){$('cloudStatus').textContent='add your Supabase URL and publishable key first.';return}if(!window.supabase){$('cloudStatus').textContent='cloud library could not load. check your internet connection.';return}try{let client=window.supabase.createClient(state.cloud.url,state.cloud.key);let {data:{user},error}=await client.auth.getUser();if(error||!user){$('cloudStatus').textContent='sign-in is not configured yet. finish Supabase Auth setup before syncing.';return}$('cloudStatus').textContent='signed in, but database sync endpoint still needs to be configured for your project.';}catch(e){$('cloudStatus').textContent='could not connect: '+e.message}}
-function showView(name){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===name));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==name));if(name==='budgets')makeInputs();if(name==='settings')applyAppearance()}
+function showView(name){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===name));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==name));if(name==='budgets'){makeInputs();makeAllocationInputs();}if(name==='settings')applyAppearance()}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
 $('openAppearance').onclick=()=>showView('settings');
 document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>document.querySelector('[data-view="'+b.dataset.goto+'"]').click());
 $('sunday').onclick=sunday;$('quickMove').onclick=()=>move($('quickFrom').value,$('quickTo').value,Math.round(Number($('quickAmount').value)*100)/100);
-$('addManual').onclick=addManual;$('saveBalances').onclick=saveBalances;$('filter').onchange=drawTransactions;$('search').oninput=drawTransactions;
+$('recordInterest').onclick=recordInterest;$('saveAllocation').onclick=saveAllocation;$('addManual').onclick=addManual;$('saveBalances').onclick=saveBalances;$('filter').onchange=drawTransactions;$('search').oninput=drawTransactions;
 $('export').onclick=download;$('export2').onclick=download;$('import').onclick=()=>$('backupFile').click();$('backupFile').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(x.balances&&x.transactions){state={...DEFAULT,...x};persist()}else alert('backup format not recognised')}catch{alert('could not read backup')}};r.readAsText(f)};
 $('saveCloud').onclick=()=>{state.cloud={url:$('sbUrl').value.trim(),key:$('sbKey').value.trim()};persist();$('cloudStatus').textContent='settings saved on this device. cloud login/database still need setup.'};
 $('cloudSync').onclick=cloudSync;$('reset').onclick=()=>{if(confirm('reset all app data on this device? export a backup first if needed.')){state=structuredClone(DEFAULT);persist();makeInputs()}};
 document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>setTheme(b.dataset.themeChoice));
 $('effectsToggle').onclick=()=>{state.appearance.effects=state.appearance.effects===false;persist();applyAppearance()};
 $('lightMode').onclick=()=>setMode('light');$('darkMode').onclick=()=>setMode('dark');
-selectPots('quickFrom');selectPots('quickTo');selectPots('manualPot');$('quickFrom').value='bank';$('quickTo').value='kenya';render();makeInputs();applyAppearance();
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+selectPots('quickFrom');selectPots('quickTo');selectPots('manualPot');$('quickFrom').value='bank';$('quickTo').value='kenya';render();makeInputs();makeAllocationInputs();applyAppearance();
+let swReg=null;
+function showWaiting(){if(swReg?.waiting){$('applyUpdate').classList.remove('hidden');$('updateStatus').textContent='a new version is ready. tap install available update.'}}
+if('serviceWorker'in navigator&&location.protocol.startsWith('http')){
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!sessionStorage.getItem('moneyPlanReloading')){sessionStorage.setItem('moneyPlanReloading','1');location.reload()}});
+ navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>{swReg=r;showWaiting();r.addEventListener('updatefound',()=>{let w=r.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)showWaiting()})});}).catch(()=>{});
+}
+$('checkUpdate').onclick=async()=>{if(!swReg){$('updateStatus').textContent='updates need a supported browser and HTTPS.';return}sessionStorage.removeItem('moneyPlanReloading');$('updateStatus').textContent='checking for updates…';try{await swReg.update();if(swReg.waiting)showWaiting();else $('updateStatus').textContent='check complete. no waiting update detected; reload if github just deployed.'}catch{$('updateStatus').textContent='could not check. try again when online.'}};
+$('applyUpdate').onclick=()=>{if(swReg?.waiting)swReg.waiting.postMessage({type:'SKIP_WAITING'})};
+function urlBase64ToUint8Array(base64){const padding='='.repeat((4-base64.length%4)%4);const raw=atob((base64+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
+async function enablePush(){
+ const status=$('pushStatus');const endpoint=$('pushEndpoint').value.trim().replace(/\/$/,'');const key=$('pushKey').value.trim();
+ if(!endpoint.startsWith('https://')||!key){status.textContent='enter your HTTPS push server URL and VAPID public key first.';return}
+ if(!('PushManager'in window)||!('Notification'in window)||!swReg){status.textContent='push is not supported here. install the app on android and try again.';return}
+ try{
+ const permission=await Notification.requestPermission();if(permission!=='granted'){status.textContent='notification permission: '+permission;return}
+ let sub=await swReg.pushManager.getSubscription();if(sub){await sub.unsubscribe();sub=null}
+ sub=await swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(key)});
+ const response=await fetch(endpoint+'/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone})});
+ if(!response.ok)throw new Error('server rejected subscription ('+response.status+')');
+ state.push={endpoint,publicKey:key};persist();status.textContent='background push enabled. your server will send reminders on its schedule.';
+ }catch(e){status.textContent='push setup failed: '+e.message}
+}
+async function disablePush(){
+ try{const sub=await swReg?.pushManager.getSubscription();if(sub){const endpoint=state.push?.endpoint;if(endpoint){await fetch(endpoint+'/unsubscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})}).catch(()=>{})}await sub.unsubscribe()}state.push={endpoint:'',publicKey:''};persist();$('pushStatus').textContent='push disabled on this device.'}catch(e){$('pushStatus').textContent=e.message}
+}
+$('pushEndpoint').value=state.push.endpoint||'';$('pushKey').value=state.push.publicKey||'';
+$('enableNotifications').onclick=enablePush;$('disableNotifications').onclick=disablePush;
+
+
 </script></body></html>

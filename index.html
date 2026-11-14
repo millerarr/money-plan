@@ -128,7 +128,7 @@ body[data-effects="off"] #ambient{display:none}
   <label>display mode</label><div class="actions"><button type="button" class="secondary" id="lightMode">☀️ light mode</button><button type="button" class="secondary" id="darkMode">🌙 dark mode</button></div>
   <label for="effectsToggle">animated effects</label><div class="actions"><button type="button" class="secondary" id="effectsToggle" aria-pressed="true">✨ effects on</button></div><p class="status" id="appearanceStatus">Christmas theme · light mode</p>
  </div>
- <div class="panel"><h2>🔔 reminders & updates</h2><p class="muted">proper background push notifications need a separately deployed push server. enter its URL and VAPID public key after setup. no banking details are sent to that server.</p><label>push server URL</label><input id="pushEndpoint" placeholder="https://your-push-server.example.com"><label>VAPID public key</label><input id="pushKey" placeholder="public push key"><div class="actions"><button id="enableNotifications">enable background push</button><button class="secondary" id="disableNotifications">turn off push</button><button class="secondary" id="checkUpdate">check for app update</button><button class="secondary hidden" id="applyUpdate">install available update</button></div><p class="status" id="pushStatus">push setup required for reminders while closed.</p><p class="status" id="updateStatus">updates install from the same github pages link; no reinstall needed.</p></div>
+ <div class="panel"><h2>🔔 reminders & updates</h2><p class="muted">proper background push notifications need a separately deployed push server. enter its URL and VAPID public key after setup. no banking details are sent to that server.</p><label>push server URL</label><input id="pushEndpoint" placeholder="https://your-push-server.example.com"><label>VAPID public key</label><input id="pushKey" placeholder="public push key"><div class="actions"><button id="enableNotifications">enable background push</button><button class="secondary" id="disableNotifications">turn off push</button><button class="secondary" id="testPush">🔔 send test push</button><button class="secondary" id="checkUpdate">check for app update</button><button class="secondary hidden" id="applyUpdate">install available update</button></div><p class="status" id="pushStatus">push setup required for reminders while closed.</p><p class="status" id="updateStatus">updates install from the same github pages link; no reinstall needed.</p></div>
  <div class="panel"><h2>☁️ cloud sync</h2><p class="muted">connect a Supabase project to keep your tracker in sync across your iPhone and laptop.</p><label>Supabase project URL</label><input id="sbUrl" placeholder="https://your-project.supabase.co"><label>Supabase publishable / anon key</label><input id="sbKey" placeholder="public client key"><div class="actions"><button id="saveCloud">save cloud settings</button><button class="secondary" id="cloudSync">sync now</button></div><p id="cloudStatus" class="status">not configured. your data remains on this device.</p></div>
  <div class="panel"><h2>🏦 monzo connection</h2><p class="notice">monzo access is not enabled in this build. the intended integration is read-only: import account transactions, current balance and pot balances after you approve access with monzo. it will not move money or make payments.</p><div class="actions"><button class="secondary" disabled>connect monzo — setup required</button></div><p class="status">a secure server-side oauth setup and monzo developer client are still required. never paste your monzo password or private keys here.</p></div>
  <div class="panel"><h2>backup & privacy</h2><p class="muted">export a JSON backup before changing devices. local data is stored in this browser. cloud sync requires a configured Supabase project and signed-in user; this starter build does not silently upload your financial data.</p><div class="actions"><button class="secondary" id="export2">download backup</button><button class="warn" id="reset">reset this app</button></div></div>
@@ -257,6 +257,23 @@ async function disablePush(){
 }
 $('pushEndpoint').value=state.push.endpoint||'https://money-plan-notifications.oobayoopa.workers.dev';$('pushKey').value=state.push.publicKey||'';
 $('enableNotifications').onclick=enablePush;$('disableNotifications').onclick=disablePush;
+$('testPush').onclick=async()=>{
+ const status=$('pushStatus'),button=$('testPush');
+ if(!swReg){status.textContent='service worker not ready. reopen the installed app.';return}
+ const endpoint=(state.push?.endpoint||$('pushEndpoint').value||'').trim().replace(/\/$/,'');
+ if(!endpoint.startsWith('https://')){status.textContent='enable background push first.';return}
+ button.disabled=true;status.textContent='sending a real push through cloudflare…';
+ try{
+  const sub=await swReg.pushManager.getSubscription();
+  if(!sub)throw new Error('no subscription on this device. enable background push first.');
+  const r=await fetch(endpoint+'/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(data.error||'server returned '+r.status);
+  status.textContent='test push accepted by server. check android notifications (delivery may take a moment).';
+ }catch(e){status.textContent='test push failed: '+e.message}
+ finally{button.disabled=false}
+};
+
 
 
 </script></body></html>

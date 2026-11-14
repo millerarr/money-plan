@@ -24,6 +24,44 @@ label{display:block;font-size:12px;color:var(--muted);margin:9px 0 4px}input,sel
 .hidden{display:none!important}.view{display:grid;gap:15px}.barChart{display:flex;align-items:end;gap:8px;height:125px;padding:8px 0 0}.barcol{flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px;height:100%}.barcol i{display:block;width:100%;max-width:32px;border-radius:6px 6px 2px 2px;background:#5b83a8;min-height:2px}.barcol span{font-size:10px;color:var(--muted)}
 footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px 24px}
 @media(min-width:740px){.cards{grid-template-columns:repeat(4,1fr)}.layout{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}}
+
+/* appearance themes */
+body{--navy:#a9152b;--navy2:#d7354b;--ink:#54202a;--muted:#916d72;--line:#f0dadd;--bg:#fff7f7;--white:#fff;--green:#16845d;--red:#b34b45;--soft:#ffebee;--accent:#c52b42;--heroText:#fff}
+body[data-theme="summer"]{--navy:#087e8b;--navy2:#24b7a5;--ink:#173b42;--muted:#67848a;--line:#d7ece9;--bg:#f0fbf8;--white:#fff;--soft:#dff5ef;--accent:#f0a43a}
+body[data-theme="winter"]{--navy:#315a83;--navy2:#7199bd;--ink:#20364c;--muted:#71869b;--line:#dce8f2;--bg:#f2f8fd;--white:#fff;--soft:#e5f0f8;--accent:#7eb6d9}
+body[data-theme="japan"]{--navy:#b64b62;--navy2:#e8a0ad;--ink:#4e2936;--muted:#92717c;--line:#f0dce2;--bg:#fff7f9;--white:#fff;--soft:#fbe8ee;--accent:#d66b87}
+body[data-theme="arsenal"]{--navy:#db1021;--navy2:#9e0b18;--ink:#292929;--muted:#777;--line:#e7d6d8;--bg:#f7f7f7;--white:#fff;--soft:#fce7e9;--accent:#173b70}
+body[data-mode="dark"]{--ink:#f1edf0;--muted:#b4aab2;--line:#403840;--bg:#171419;--white:#241f26;--soft:#342b34;--green:#65d6a5;--red:#ff8b83}
+body[data-mode="dark"][data-theme="summer"]{--navy:#075b65;--navy2:#087f80;--accent:#ffc15b}
+body[data-mode="dark"][data-theme="winter"]{--navy:#203e5d;--navy2:#426b91;--accent:#8dcaf0}
+body[data-mode="dark"][data-theme="japan"]{--navy:#773449;--navy2:#a95770;--accent:#f19ab2}
+body[data-mode="dark"][data-theme="arsenal"]{--navy:#a70c1b;--navy2:#650814;--accent:#7ba4df}
+body[data-mode="dark"] header{color:#fff}
+body[data-mode="dark"] input,body[data-mode="dark"] select{background:#302a32;color:var(--ink);border-color:var(--line)}
+body[data-mode="dark"] .progress{background:#403943}
+body[data-mode="dark"] .notice{background:#3c3425;border-color:#66552f;color:#f5e8c6}
+body[data-mode="dark"] nav button.active{background:#fff;color:#20202a}
+body[data-theme="christmas"] header{background:linear-gradient(120deg,#a9152b,#d7354b)}
+body[data-theme="summer"] header{background:linear-gradient(120deg,#087e8b,#24b7a5)}
+body[data-theme="winter"] header{background:linear-gradient(120deg,#315a83,#7199bd)}
+body[data-theme="japan"] header{background:linear-gradient(120deg,#b64b62,#e8a0ad)}
+body[data-theme="arsenal"] header{background:linear-gradient(120deg,#db1021 0 68%,#173b70 68% 100%)}
+body[data-theme="christmas"] .barcol i{background:#d7354b}
+body[data-theme="summer"] .barcol i{background:#24b7a5}
+body[data-theme="winter"] .barcol i{background:#7eb6d9}
+body[data-theme="japan"] .barcol i{background:#d66b87}
+body[data-theme="arsenal"] .barcol i{background:#db1021}
+body[data-theme="winter"] main:before{content:"❄  ❅  ❄  ❆  ❄";display:block;text-align:center;color:#8bb9d8;letter-spacing:18px;font-size:18px;opacity:.7}
+body[data-theme="japan"] main:before{content:"🌸   ✿   🌸   ✿   🌸";display:block;text-align:center;color:#d66b87;letter-spacing:10px;font-size:17px}
+body[data-theme="summer"] main:before{content:"☀  ✦  ☀  ✦  ☀";display:block;text-align:center;color:#e9a23b;letter-spacing:15px;font-size:17px}
+body[data-theme="christmas"] main:before{content:"✦  ❄  ✦  ❄  ✦";display:block;text-align:center;color:#c52b42;letter-spacing:14px;font-size:17px}
+body[data-theme="arsenal"] main:before{content:"ARSENAL  •  NORTH LONDON";display:block;text-align:center;color:#db1021;font-weight:800;letter-spacing:3px;font-size:12px}
+.appearance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.theme-choice{display:flex;align-items:center;gap:9px;padding:11px;border:1px solid var(--line);border-radius:12px;background:var(--white);color:var(--ink);text-align:left}
+.theme-choice.active{outline:2px solid var(--accent);border-color:var(--accent)}
+.theme-swatch{width:27px;height:27px;border-radius:9px;flex:0 0 auto;border:1px solid #0001}
+@media(min-width:740px){.appearance-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
 </style></head>
 <body>
 <header><div class="top"><div><h1>💷 money plan</h1><p>your money, organised.</p></div><span class="pill" id="syncPill">device only</span></div>
@@ -56,6 +94,17 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px 24px
  <div class="panel"><h2>weekly £10 plan</h2><div class="potrow row"><span>Kenya</span><b>£2</b></div><div class="potrow row"><span>Reselling</span><b>£2</b></div><div class="potrow row"><span>Own clothes</span><b>£1</b></div><div class="potrow row"><span>iPhone</span><b>£3</b></div><div class="potrow row"><span>left in main bank</span><b>£2</b></div></div>
 </section>
 <section class="view hidden" id="settings">
+ <div class="panel"><h2>🎨 appearance</h2><p class="muted">choose a look for your Money Plan dashboard. your choice is saved on this device.</p>
+  <label>theme</label><div class="appearance-grid" id="themeChoices">
+   <button type="button" class="theme-choice" data-theme-choice="christmas"><span class="theme-swatch" style="background:linear-gradient(135deg,#a9152b,#fff)"></span>Christmas</button>
+   <button type="button" class="theme-choice" data-theme-choice="summer"><span class="theme-swatch" style="background:linear-gradient(135deg,#087e8b,#f0a43a)"></span>Summer</button>
+   <button type="button" class="theme-choice" data-theme-choice="winter"><span class="theme-swatch" style="background:linear-gradient(135deg,#315a83,#dceefa)"></span>Winter snow</button>
+   <button type="button" class="theme-choice" data-theme-choice="japan"><span class="theme-swatch" style="background:linear-gradient(135deg,#b64b62,#f7dbe3)"></span>Japan · Fuji & sakura</button>
+   <button type="button" class="theme-choice" data-theme-choice="arsenal"><span class="theme-swatch" style="background:linear-gradient(135deg,#db1021 0 65%,#173b70 65%)"></span>Arsenal</button>
+  </div>
+  <label>display mode</label><div class="actions"><button type="button" class="secondary" id="lightMode">☀️ light mode</button><button type="button" class="secondary" id="darkMode">🌙 dark mode</button></div>
+  <p class="status" id="appearanceStatus">Christmas theme · light mode</p>
+ </div>
  <div class="panel"><h2>☁️ cloud sync</h2><p class="muted">connect a Supabase project to keep your tracker in sync across your iPhone and laptop.</p><label>Supabase project URL</label><input id="sbUrl" placeholder="https://your-project.supabase.co"><label>Supabase publishable / anon key</label><input id="sbKey" placeholder="public client key"><div class="actions"><button id="saveCloud">save cloud settings</button><button class="secondary" id="cloudSync">sync now</button></div><p id="cloudStatus" class="status">not configured. your data remains on this device.</p></div>
  <div class="panel"><h2>🏦 monzo connection</h2><p class="notice">monzo access is not enabled in this build. the intended integration is read-only: import account transactions, current balance and pot balances after you approve access with monzo. it will not move money or make payments.</p><div class="actions"><button class="secondary" disabled>connect monzo — setup required</button></div><p class="status">a secure server-side oauth setup and monzo developer client are still required. never paste your monzo password or private keys here.</p></div>
  <div class="panel"><h2>backup & privacy</h2><p class="muted">export a JSON backup before changing devices. local data is stored in this browser. cloud sync requires a configured Supabase project and signed-in user; this starter build does not silently upload your financial data.</p><div class="actions"><button class="secondary" id="export2">download backup</button><button class="warn" id="reset">reset this app</button></div></div>
@@ -63,14 +112,23 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px 24px
 </main><footer>money plan · private personal tracker · no banking access is active in this build</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const DEFAULT={balances:{bank:170,kenya:45,phone:0,resale:10,clothes:5},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,cloud:{url:'',key:''}};
-let state;try{state={...DEFAULT,...JSON.parse(localStorage.getItem('moneyPlan')||'{}')};state.balances={...DEFAULT.balances,...state.balances};state.goals={...DEFAULT.goals,...state.goals};}catch{state=structuredClone(DEFAULT)}
+const DEFAULT={balances:{bank:170,kenya:45,phone:0,resale:10,clothes:5},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,cloud:{url:'',key:''},appearance:{theme:'christmas',mode:'light'}};
+let state;try{state={...DEFAULT,...JSON.parse(localStorage.getItem('moneyPlan')||'{}')};state.balances={...DEFAULT.balances,...state.balances};state.goals={...DEFAULT.goals,...state.goals};state.appearance={...DEFAULT.appearance,...state.appearance};}catch{state=structuredClone(DEFAULT)}
 const pots=[['bank','Main bank'],['kenya','Kenya'],['phone','iPhone'],['resale','Reselling'],['clothes','Own clothes']];
 const $=id=>document.getElementById(id),fmt=n=>'£'+Number(n||0).toFixed(2),now=()=>new Date().toISOString();
 function persist(){localStorage.setItem('moneyPlan',JSON.stringify(state));render()}
 function txn(type,description,amount,pot='',extra={}){state.transactions.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),type,description,amount:Number(amount||0),pot,date:now(),source:'manual',...extra})}
 function selectPots(id){$(id).innerHTML=pots.map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}
 function pct(a,b){return Math.max(0,Math.min(100,a/Math.max(1,b)*100))}
+function applyAppearance(){
+ const theme=state.appearance?.theme||'christmas',mode=state.appearance?.mode||'light';
+ document.body.dataset.theme=theme;document.body.dataset.mode=mode;
+ document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===theme));
+ $('appearanceStatus').textContent=({christmas:'Christmas',summer:'Summer',winter:'Winter snow',japan:'Japan · Mount Fuji & cherry blossoms',arsenal:'Arsenal'})[theme]+' · '+mode+' mode';
+ $('lightMode').classList.toggle('active',mode==='light');$('darkMode').classList.toggle('active',mode==='dark');
+}
+function setTheme(theme){state.appearance.theme=theme;persist();applyAppearance()}
+function setMode(mode){state.appearance.mode=mode;persist();applyAppearance()}
 function render(){
  for(const [k] of pots)if($('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale'}[k]||'')))$('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale'}[k])).textContent=fmt(state.balances[k]);
  $('phoneGoalLabel').textContent='goal '+fmt(state.goals.phone);
@@ -103,6 +161,8 @@ $('addManual').onclick=addManual;$('saveBalances').onclick=saveBalances;$('filte
 $('export').onclick=download;$('export2').onclick=download;$('import').onclick=()=>$('backupFile').click();$('backupFile').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(x.balances&&x.transactions){state={...DEFAULT,...x};persist()}else alert('backup format not recognised')}catch{alert('could not read backup')}};r.readAsText(f)};
 $('saveCloud').onclick=()=>{state.cloud={url:$('sbUrl').value.trim(),key:$('sbKey').value.trim()};persist();$('cloudStatus').textContent='settings saved on this device. cloud login/database still need setup.'};
 $('cloudSync').onclick=cloudSync;$('reset').onclick=()=>{if(confirm('reset all app data on this device? export a backup first if needed.')){state=structuredClone(DEFAULT);persist();makeInputs()}};
-selectPots('quickFrom');selectPots('quickTo');selectPots('manualPot');$('quickFrom').value='bank';$('quickTo').value='kenya';render();makeInputs();
+document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>setTheme(b.dataset.themeChoice));
+$('lightMode').onclick=()=>setMode('light');$('darkMode').onclick=()=>setMode('dark');
+selectPots('quickFrom');selectPots('quickTo');selectPots('manualPot');$('quickFrom').value='bank';$('quickTo').value='kenya';render();makeInputs();applyAppearance();
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script></body></html>

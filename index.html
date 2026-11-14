@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#142b43"><meta name="description" content="A personal money and savings dashboard.">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg">
+<title>Money Plan</title>
+<style>
+:root{--navy:#142b43;--navy2:#203c59;--ink:#182535;--muted:#738195;--line:#e3e9ef;--bg:#f4f7fa;--white:#fff;--green:#16845d;--red:#b34b45;--soft:#edf3f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:white;padding:22px max(18px,calc((100% - 1120px)/2));padding-top:max(22px,env(safe-area-inset-top))}
+header .top{display:flex;align-items:center;justify-content:space-between;gap:14px}h1{font-size:25px;margin:0}header p{margin:4px 0 0;color:#d4dfeb;font-size:13px}
+main{max-width:1120px;margin:20px auto;padding:0 14px 42px;display:grid;gap:15px}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin-top:17px}nav button{background:#ffffff20;color:#fff;border:1px solid #ffffff25;padding:8px 12px}nav button.active{background:white;color:var(--navy)}
+button{border:0;border-radius:10px;padding:10px 14px;background:var(--navy);color:white;font:inherit;font-weight:650;cursor:pointer}button.secondary{background:var(--soft);color:var(--navy)}button.warn{background:#fff0ed;color:var(--red)}button:disabled{opacity:.5;cursor:not-allowed}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card,.panel{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 2px 9px #142b4308}
+.metric{font-size:25px;font-weight:780;letter-spacing:-.5px;margin:6px 0}.muted{color:var(--muted);font-size:12px}.small{font-size:13px}h2{font-size:17px;margin:0 0 13px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.layout{display:grid;gap:15px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--muted);margin:9px 0 4px}input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.progress{height:8px;background:#edf1f5;border-radius:99px;overflow:hidden;margin:7px 0 15px}.bar{height:100%;background:#21956b;width:0}
+.potrow{padding:10px 0;border-bottom:1px solid var(--line)}.potrow:last-child{border:0}
+.txns{display:grid}.txn{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.txn:last-child{border:0}.txn small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.income{color:var(--green)}.expense{color:var(--red)}.pill{font-size:11px;background:var(--soft);color:var(--navy);padding:4px 8px;border-radius:99px}
+.notice{background:#fff7df;border:1px solid #f1e2b5;border-radius:12px;padding:12px;font-size:13px;line-height:1.5}.status{font-size:12px;color:var(--muted)}
+.hidden{display:none!important}.view{display:grid;gap:15px}.barChart{display:flex;align-items:end;gap:8px;height:125px;padding:8px 0 0}.barcol{flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px;height:100%}.barcol i{display:block;width:100%;max-width:32px;border-radius:6px 6px 2px 2px;background:#5b83a8;min-height:2px}.barcol span{font-size:10px;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 15px 24px}
+@media(min-width:740px){.cards{grid-template-columns:repeat(4,1fr)}.layout{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}}
+</style></head>
+<body>
+<header><div class="top"><div><h1>💷 money plan</h1><p>your money, organised.</p></div><span class="pill" id="syncPill">device only</span></div>
+<nav><button class="active" data-view="overview">overview</button><button data-view="activity">activity</button><button data-view="budgets">pots & budgets</button><button data-view="settings">settings</button></nav></header>
+<main>
+<section class="view" id="overview">
+ <div class="cards">
+  <div class="card"><div class="muted">main bank</div><div class="metric" id="mBank">£170.00</div><div class="muted">main balance</div></div>
+  <div class="card"><div class="muted">Kenya savings</div><div class="metric" id="mKenya">£45.00</div><div class="muted">goal £200</div></div>
+  <div class="card"><div class="muted">iPhone fund</div><div class="metric" id="mPhone">£0.00</div><div class="muted" id="phoneGoalLabel">goal £120</div></div>
+  <div class="card"><div class="muted">reselling fund</div><div class="metric" id="mResale">£10.00</div><div class="muted">working budget</div></div>
+ </div>
+ <div class="layout">
+  <div class="panel"><h2>🎯 savings goals</h2><div id="goals"></div></div>
+  <div class="panel"><h2>📊 recent money flow</h2><div class="muted">last 7 days · manual entries and synced items</div><div class="barChart" id="chart"></div><div class="row muted"><span>spending</span><span id="weekSpend">£0.00 spent</span></div></div>
+ </div>
+ <div class="layout">
+  <div class="panel"><h2>➕ add weekly income</h2><p class="muted">your usual £10 Sunday payment. only log it once it arrives.</p><button id="sunday">add £10 sunday income</button><p class="status" id="sundayTotal"></p></div>
+  <div class="panel"><h2>↔️ quick money move</h2><div class="grid2"><div><label>from</label><select id="quickFrom"></select></div><div><label>to</label><select id="quickTo"></select></div></div><label>amount (£)</label><input id="quickAmount" type="number" min=".01" step=".01" placeholder="5.00"><div class="actions"><button id="quickMove">move money</button></div></div>
+ </div>
+ <div class="panel"><div class="row"><h2>🧾 latest activity</h2><button class="secondary" data-goto="activity">see all</button></div><div id="latest" class="txns"></div></div>
+</section>
+<section class="view hidden" id="activity">
+ <div class="panel"><div class="row"><h2>all activity</h2><button class="secondary" id="export">export backup</button></div><div class="grid2"><div><label>filter</label><select id="filter"><option value="all">everything</option><option value="spend">spending</option><option value="income">income</option><option value="transfer">money moves</option><option value="monzo">monzo imports</option></select></div><div><label>search</label><input id="search" placeholder="merchant or note"></div></div><div id="allTxns" class="txns"></div><div class="actions"><button class="secondary" id="import">import backup</button><input type="file" id="backupFile" accept="application/json" hidden></div></div>
+ <div class="panel"><h2>✍️ add a transaction manually</h2><div class="grid2"><div><label>type</label><select id="manualType"><option value="spend">spending</option><option value="income">income</option></select></div><div><label>pot</label><select id="manualPot"></select></div></div><div class="grid2"><div><label>amount (£)</label><input id="manualAmount" type="number" min=".01" step=".01"></div><div><label>description</label><input id="manualDesc" maxlength="70" placeholder="what was it?"></div></div><div class="actions"><button id="addManual">add transaction</button></div></div>
+</section>
+<section class="view hidden" id="budgets">
+ <div class="panel"><h2>your pots</h2><div id="potList"></div></div>
+ <div class="panel"><h2>edit balances & goals</h2><p class="muted">use this to enter your real starting balances. changes are saved to your tracker.</p><div class="grid2" id="balanceInputs"></div><div class="actions"><button id="saveBalances">save changes</button></div></div>
+ <div class="panel"><h2>weekly £10 plan</h2><div class="potrow row"><span>Kenya</span><b>£2</b></div><div class="potrow row"><span>Reselling</span><b>£2</b></div><div class="potrow row"><span>Own clothes</span><b>£1</b></div><div class="potrow row"><span>iPhone</span><b>£3</b></div><div class="potrow row"><span>left in main bank</span><b>£2</b></div></div>
+</section>
+<section class="view hidden" id="settings">
+ <div class="panel"><h2>☁️ cloud sync</h2><p class="muted">connect a Supabase project to keep your tracker in sync across your iPhone and laptop.</p><label>Supabase project URL</label><input id="sbUrl" placeholder="https://your-project.supabase.co"><label>Supabase publishable / anon key</label><input id="sbKey" placeholder="public client key"><div class="actions"><button id="saveCloud">save cloud settings</button><button class="secondary" id="cloudSync">sync now</button></div><p id="cloudStatus" class="status">not configured. your data remains on this device.</p></div>
+ <div class="panel"><h2>🏦 monzo connection</h2><p class="notice">monzo access is not enabled in this build. the intended integration is read-only: import account transactions, current balance and pot balances after you approve access with monzo. it will not move money or make payments.</p><div class="actions"><button class="secondary" disabled>connect monzo — setup required</button></div><p class="status">a secure server-side oauth setup and monzo developer client are still required. never paste your monzo password or private keys here.</p></div>
+ <div class="panel"><h2>backup & privacy</h2><p class="muted">export a JSON backup before changing devices. local data is stored in this browser. cloud sync requires a configured Supabase project and signed-in user; this starter build does not silently upload your financial data.</p><div class="actions"><button class="secondary" id="export2">download backup</button><button class="warn" id="reset">reset this app</button></div></div>
+</section>
+</main><footer>money plan · private personal tracker · no banking access is active in this build</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const DEFAULT={balances:{bank:170,kenya:45,phone:0,resale:10,clothes:5},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,cloud:{url:'',key:''}};
+let state;try{state={...DEFAULT,...JSON.parse(localStorage.getItem('moneyPlan')||'{}')};state.balances={...DEFAULT.balances,...state.balances};state.goals={...DEFAULT.goals,...state.goals};}catch{state=structuredClone(DEFAULT)}
+const pots=[['bank','Main bank'],['kenya','Kenya'],['phone','iPhone'],['resale','Reselling'],['clothes','Own clothes']];
+const $=id=>document.getElementById(id),fmt=n=>'£'+Number(n||0).toFixed(2),now=()=>new Date().toISOString();
+function persist(){localStorage.setItem('moneyPlan',JSON.stringify(state));render()}
+function txn(type,description,amount,pot='',extra={}){state.transactions.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),type,description,amount:Number(amount||0),pot,date:now(),source:'manual',...extra})}
+function selectPots(id){$(id).innerHTML=pots.map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}
+function pct(a,b){return Math.max(0,Math.min(100,a/Math.max(1,b)*100))}
+function render(){
+ for(const [k] of pots)if($('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale'}[k]||'')))$('m'+({bank:'Bank',kenya:'Kenya',phone:'Phone',resale:'Resale'}[k])).textContent=fmt(state.balances[k]);
+ $('phoneGoalLabel').textContent='goal '+fmt(state.goals.phone);
+ $('goals').innerHTML=[['Kenya',state.balances.kenya,state.goals.kenya],['iPhone',state.balances.phone,state.goals.phone],['Reselling',state.balances.resale,state.goals.resale]].map(([n,a,b])=>`<div class="row"><b>${n}</b><span class="muted">${fmt(a)} / ${fmt(b)}</span></div><div class="progress"><div class="bar" style="width:${pct(a,b)}%"></div></div>`).join('');
+ $('potList').innerHTML=pots.map(([k,n])=>`<div class="potrow row"><span>${n}</span><b>${fmt(state.balances[k])}</b></div>`).join('');
+ $('sundayTotal').textContent=state.sundayCount+' Sunday payments logged';
+ const last=state.transactions.slice(0,5);$('latest').innerHTML=last.length?last.map(txHtml).join(''):'<p class="muted">nothing logged yet.</p>';
+ const week=state.transactions.filter(t=>Date.now()-new Date(t.date).getTime()<7*864e5),spend=week.filter(t=>t.type==='spend').reduce((s,t)=>s+t.amount,0);$('weekSpend').textContent=fmt(spend)+' spent';
+ const days=Array.from({length:7},(_,i)=>{let d=new Date();d.setDate(d.getDate()-(6-i));return d});
+ const vals=days.map(d=>week.filter(t=>t.type==='spend'&&new Date(t.date).toDateString()===d.toDateString()).reduce((s,t)=>s+t.amount,0)),max=Math.max(1,...vals);
+ $('chart').innerHTML=days.map((d,i)=>`<div class="barcol"><i style="height:${Math.max(3,vals[i]/max*88)}px"></i><span>${d.toLocaleDateString('en-GB',{weekday:'short'})}</span></div>`).join('');
+ drawTransactions();
+ $('syncPill').textContent=state.cloud.url?'cloud configured':'device only';
+ $('sbUrl').value=state.cloud.url||'';$('sbKey').value=state.cloud.key||'';
+}
+function txHtml(t){let sign=t.type==='income'?'+':t.type==='spend'?'−':'';let cls=t.type==='income'?'income':t.type==='spend'?'expense':'';let p=pots.find(x=>x[0]===t.pot)?.[1]||t.pot||'account';return `<div class="txn"><div><b>${esc(t.description||'transaction')}</b><small>${new Date(t.date).toLocaleString('en-GB')} · ${esc(p)} · ${t.source==='monzo'?'monzo':'manual'}</small></div><b class="${cls}">${sign}${fmt(t.amount)}</b></div>`}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function drawTransactions(){let q=($('search')?.value||'').toLowerCase(),f=$('filter')?.value||'all';let a=state.transactions.filter(t=>(f==='all'||t.type===f||(f==='monzo'&&t.source==='monzo'))&&(!q||String(t.description).toLowerCase().includes(q)));$('allTxns').innerHTML=a.length?a.map(txHtml).join(''):'<p class="muted">no matching activity.</p>'}
+function sunday(){state.balances.bank+=10;txn('income','Sunday payment',10,'bank');[['kenya',2],['resale',2],['clothes',1],['phone',3]].forEach(([k,v])=>{state.balances.bank-=v;state.balances[k]+=v;txn('transfer','Sunday allocation',v,k,{from:'bank'});});state.sundayCount++;persist()}
+function move(from,to,amount){if(from===to||amount<=0||state.balances[from]<amount){alert('check the pots and amount.');return false}state.balances[from]-=amount;state.balances[to]+=amount;txn('transfer','Money moved',amount,to,{from});persist();return true}
+function addManual(){let type=$('manualType').value,pot=$('manualPot').value,amount=Number($('manualAmount').value),desc=$('manualDesc').value.trim()||'manual entry';if(!amount||amount<=0){alert('enter a valid amount.');return}if(type==='spend'&&state.balances[pot]<amount){alert('not enough in that pot.');return}state.balances[pot]+=type==='income'?amount:-amount;txn(type,desc,amount,pot);$('manualAmount').value='';$('manualDesc').value='';persist()}
+function saveBalances(){pots.forEach(([k])=>{let v=Number($('bal_'+k).value);if(Number.isFinite(v)&&v>=0)state.balances[k]=v});state.goals.phone=Math.max(1,Number($('goal_phone').value)||120);state.goals.kenya=Math.max(1,Number($('goal_kenya').value)||200);state.goals.resale=Math.max(1,Number($('goal_resale').value)||50);txn('adjustment','Balances updated',0,'');persist()}
+function makeInputs(){$('balanceInputs').innerHTML=pots.map(([k,n])=>`<div><label>${n} (£)</label><input type="number" min="0" step=".01" id="bal_${k}" value="${state.balances[k]}"></div>`).join('')+[['phone','iPhone goal'],['kenya','Kenya goal'],['resale','Reselling target']].map(([k,n])=>`<div><label>${n} (£)</label><input type="number" min="1" step="1" id="goal_${k}" value="${state.goals[k]}"></div>`).join('')}
+function download(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='money-plan-backup.json';a.click();URL.revokeObjectURL(u)}
+async function cloudSync(){if(!state.cloud.url||!state.cloud.key){$('cloudStatus').textContent='add your Supabase URL and publishable key first.';return}if(!window.supabase){$('cloudStatus').textContent='cloud library could not load. check your internet connection.';return}try{let client=window.supabase.createClient(state.cloud.url,state.cloud.key);let {data:{user},error}=await client.auth.getUser();if(error||!user){$('cloudStatus').textContent='sign-in is not configured yet. finish Supabase Auth setup before syncing.';return}$('cloudStatus').textContent='signed in, but database sync endpoint still needs to be configured for your project.';}catch(e){$('cloudStatus').textContent='could not connect: '+e.message}}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==b.dataset.view));if(b.dataset.view==='budgets')makeInputs();});
+document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>document.querySelector('[data-view="'+b.dataset.goto+'"]').click());
+$('sunday').onclick=sunday;$('quickMove').onclick=()=>move($('quickFrom').value,$('quickTo').value,Math.round(Number($('quickAmount').value)*100)/100);
+$('addManual').onclick=addManual;$('saveBalances').onclick=saveBalances;$('filter').onchange=drawTransactions;$('search').oninput=drawTransactions;
+$('export').onclick=download;$('export2').onclick=download;$('import').onclick=()=>$('backupFile').click();$('backupFile').onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(x.balances&&x.transactions){state={...DEFAULT,...x};persist()}else alert('backup format not recognised')}catch{alert('could not read backup')}};r.readAsText(f)};
+$('saveCloud').onclick=()=>{state.cloud={url:$('sbUrl').value.trim(),key:$('sbKey').value.trim()};persist();$('cloudStatus').textContent='settings saved on this device. cloud login/database still need setup.'};
+$('cloudSync').onclick=cloudSync;$('reset').onclick=()=>{if(confirm('reset all app data on this device? export a backup first if needed.')){state=structuredClone(DEFAULT);persist();makeInputs()}};
+selectPots('quickFrom');selectPots('quickTo');selectPots('manualPot');$('quickFrom').value='bank';$('quickTo').value='kenya';render();makeInputs();
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>

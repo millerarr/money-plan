@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#142b43"><meta name="description" content="A personal money and savings dashboard.">
-<link rel="manifest" href="./manifest.webmanifest?v=6"><link rel="icon" type="image/svg+xml" href="./icon.svg?v=6"><link rel="apple-touch-icon" href="./icon-192.png?v=6">
+<link rel="manifest" href="./manifest.webmanifest?v=7"><link rel="icon" type="image/svg+xml" href="./icon.svg?v=7"><link rel="apple-touch-icon" href="./icon-192.png?v=7">
 <title>Money Plan</title>
 <style>
 :root{--navy:#142b43;--navy2:#203c59;--ink:#182535;--muted:#738195;--line:#e3e9ef;--bg:#f4f7fa;--white:#fff;--green:#16845d;--red:#b34b45;--soft:#edf3f8}
@@ -62,8 +62,29 @@ body[data-theme="arsenal"] main:before{content:"ARSENAL  •  NORTH LONDON";disp
 .theme-swatch{width:27px;height:27px;border-radius:9px;flex:0 0 auto;border:1px solid #0001}
 @media(min-width:740px){.appearance-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
+
+/* quiet scenic wallpapers and lightweight decorative motion */
+body{isolation:isolate}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-position:center bottom;background-size:cover;opacity:.30}
+body[data-theme="christmas"]::before{background-image:url('./wallpaper-christmas.svg')}
+body[data-theme="winter"]::before{background-image:url('./wallpaper-winter.svg')}
+body[data-theme="japan"]::before{background-image:url('./wallpaper-japan.svg')}
+body[data-theme="summer"]::before{background-image:url('./wallpaper-summer.svg')}
+body[data-theme="arsenal"]::before{background-image:none}
+body[data-mode="dark"]::before{opacity:.12}
+body[data-theme="summer"]::after{content:"";position:fixed;top:-25vh;right:-30vw;width:75vw;height:75vw;border-radius:50%;background:radial-gradient(circle,#ffd27b55,transparent 67%);pointer-events:none;z-index:-1;animation:sunGlow 12s ease-in-out infinite alternate}
+body[data-effects="off"]::after{animation:none}
+@keyframes sunGlow{from{transform:scale(.85);opacity:.45}to{transform:scale(1.15);opacity:.9}}
+#ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:4}
+.ambient-piece{position:absolute;top:-8%;left:var(--left);font-size:var(--size);opacity:0;animation:drift var(--duration) linear infinite;animation-delay:var(--delay);will-change:transform}
+@keyframes drift{0%{transform:translate3d(0,-8vh,0) rotate(0);opacity:0}10%{opacity:.48}85%{opacity:.42}100%{transform:translate3d(var(--sway),112vh,0) rotate(var(--rotate));opacity:0}}
+#sleigh{position:fixed;top:90px;left:0;z-index:5;pointer-events:none;font-size:28px;filter:drop-shadow(0 2px 4px #0002);animation:sleighFlight 32s linear infinite;opacity:0}
+@keyframes sleighFlight{0%,63%{transform:translateX(-180px) translateY(0);opacity:0}66%{opacity:.9}85%{opacity:.9}91%,100%{transform:translateX(calc(100vw + 200px)) translateY(-70px);opacity:0}}
+body[data-theme]:not([data-theme="christmas"]) #sleigh,body[data-effects="off"] #sleigh{display:none}
+body[data-effects="off"] #ambient{display:none}
+@media(prefers-reduced-motion:reduce){.ambient-piece,#sleigh,body::after{animation:none!important}#ambient,#sleigh{display:none!important}}
 </style></head>
-<body>
+<body><div id="ambient" aria-hidden="true"></div><div id="sleigh" aria-hidden="true">🦌 🦌 🛷🎅</div>
 <header><div class="top"><div><h1>💷 money plan</h1><p>your money, organised.</p></div><div class="head-actions"><button type="button" class="appearance-shortcut" id="openAppearance">🎨 appearance</button><span class="pill" id="syncPill">device only</span></div></div>
 <nav><button class="active" data-view="overview">overview</button><button data-view="activity">activity</button><button data-view="budgets">pots & budgets</button><button data-view="settings">settings</button></nav></header>
 <main>
@@ -103,7 +124,7 @@ body[data-theme="arsenal"] main:before{content:"ARSENAL  •  NORTH LONDON";disp
    <button type="button" class="theme-choice" data-theme-choice="arsenal"><span class="theme-swatch" style="background:linear-gradient(135deg,#db1021 0 65%,#173b70 65%)"></span>Arsenal</button>
   </div>
   <label>display mode</label><div class="actions"><button type="button" class="secondary" id="lightMode">☀️ light mode</button><button type="button" class="secondary" id="darkMode">🌙 dark mode</button></div>
-  <p class="status" id="appearanceStatus">Christmas theme · light mode</p>
+  <label for="effectsToggle">animated effects</label><div class="actions"><button type="button" class="secondary" id="effectsToggle" aria-pressed="true">✨ effects on</button></div><p class="status" id="appearanceStatus">Christmas theme · light mode</p>
  </div>
  <div class="panel"><h2>☁️ cloud sync</h2><p class="muted">connect a Supabase project to keep your tracker in sync across your iPhone and laptop.</p><label>Supabase project URL</label><input id="sbUrl" placeholder="https://your-project.supabase.co"><label>Supabase publishable / anon key</label><input id="sbKey" placeholder="public client key"><div class="actions"><button id="saveCloud">save cloud settings</button><button class="secondary" id="cloudSync">sync now</button></div><p id="cloudStatus" class="status">not configured. your data remains on this device.</p></div>
  <div class="panel"><h2>🏦 monzo connection</h2><p class="notice">monzo access is not enabled in this build. the intended integration is read-only: import account transactions, current balance and pot balances after you approve access with monzo. it will not move money or make payments.</p><div class="actions"><button class="secondary" disabled>connect monzo — setup required</button></div><p class="status">a secure server-side oauth setup and monzo developer client are still required. never paste your monzo password or private keys here.</p></div>
@@ -112,7 +133,7 @@ body[data-theme="arsenal"] main:before{content:"ARSENAL  •  NORTH LONDON";disp
 </main><footer>money plan · private personal tracker · no banking access is active in this build</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const DEFAULT={balances:{bank:170,kenya:45,phone:0,resale:10,clothes:5},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,cloud:{url:'',key:''},appearance:{theme:'christmas',mode:'light'}};
+const DEFAULT={balances:{bank:170,kenya:45,phone:0,resale:10,clothes:5},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,cloud:{url:'',key:''},appearance:{theme:'christmas',mode:'light',effects:true}};
 let state;try{state={...DEFAULT,...JSON.parse(localStorage.getItem('moneyPlan')||'{}')};state.balances={...DEFAULT.balances,...state.balances};state.goals={...DEFAULT.goals,...state.goals};state.appearance={...DEFAULT.appearance,...state.appearance};}catch{state=structuredClone(DEFAULT)}
 const pots=[['bank','Main bank'],['kenya','Kenya'],['phone','iPhone'],['resale','Reselling'],['clothes','Own clothes']];
 const $=id=>document.getElementById(id),fmt=n=>'£'+Number(n||0).toFixed(2),now=()=>new Date().toISOString();
@@ -122,10 +143,24 @@ function selectPots(id){$(id).innerHTML=pots.map(([k,n])=>`<option value="${k}">
 function pct(a,b){return Math.max(0,Math.min(100,a/Math.max(1,b)*100))}
 function applyAppearance(){
  const theme=state.appearance?.theme||'christmas',mode=state.appearance?.mode||'light';
- document.body.dataset.theme=theme;document.body.dataset.mode=mode;
+ document.body.dataset.theme=theme;document.body.dataset.mode=mode;document.body.dataset.effects=state.appearance.effects===false?'off':'on';
+ $('effectsToggle').textContent=state.appearance.effects===false?'✨ effects off':'✨ effects on';$('effectsToggle').setAttribute('aria-pressed',String(state.appearance.effects!==false));updateAmbient();
  document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===theme));
  $('appearanceStatus').textContent=({christmas:'Christmas',summer:'Summer',winter:'Winter snow',japan:'Japan · Mount Fuji & cherry blossoms',arsenal:'Arsenal'})[theme]+' · '+mode+' mode';
  $('lightMode').classList.toggle('active',mode==='light');$('darkMode').classList.toggle('active',mode==='dark');
+}
+function updateAmbient(){
+ const theme=state.appearance?.theme||'christmas',target=$('ambient');
+ if(!target||target.dataset.current===theme)return;
+ target.dataset.current=theme;target.replaceChildren();
+ const icons={christmas:['✦','❄','✧'],winter:['❄','❅','•'],japan:['🌸','✿','❀'],summer:['✦','·','✧']}[theme]||[];
+ if(!icons.length)return;
+ for(let i=0;i<18;i++){
+  const e=document.createElement('span');e.className='ambient-piece';e.textContent=icons[i%icons.length];
+  e.style.setProperty('--left',((i*37+13)%100)+'%');e.style.setProperty('--size',(10+i%4*4)+'px');
+  e.style.setProperty('--duration',(15+i%7*3)+'s');e.style.setProperty('--delay',(-i*2.7)+'s');
+  e.style.setProperty('--sway',((i%2?1:-1)*(20+i%5*16))+'px');e.style.setProperty('--rotate',(i%2?180:-180)+'deg');target.append(e);
+ }
 }
 function setTheme(theme){state.appearance.theme=theme;persist();applyAppearance()}
 function setMode(mode){state.appearance.mode=mode;persist();applyAppearance()}
@@ -164,6 +199,7 @@ $('export').onclick=download;$('export2').onclick=download;$('import').onclick=(
 $('saveCloud').onclick=()=>{state.cloud={url:$('sbUrl').value.trim(),key:$('sbKey').value.trim()};persist();$('cloudStatus').textContent='settings saved on this device. cloud login/database still need setup.'};
 $('cloudSync').onclick=cloudSync;$('reset').onclick=()=>{if(confirm('reset all app data on this device? export a backup first if needed.')){state=structuredClone(DEFAULT);persist();makeInputs()}};
 document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>setTheme(b.dataset.themeChoice));
+$('effectsToggle').onclick=()=>{state.appearance.effects=state.appearance.effects===false;persist();applyAppearance()};
 $('lightMode').onclick=()=>setMode('light');$('darkMode').onclick=()=>setMode('dark');
 selectPots('quickFrom');selectPots('quickTo');selectPots('manualPot');$('quickFrom').value='bank';$('quickTo').value='kenya';render();makeInputs();applyAppearance();
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});

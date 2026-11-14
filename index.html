@@ -136,7 +136,7 @@ body[data-effects="off"] #ambient{display:none}
 </main><footer>money plan · private personal tracker · no banking access is active in this build</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const DEFAULT={balances:{bank:143.92,kenya:45,phone:0,resale:10,clothes:5,cash:60},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,allocation:{kenya:2,resale:5,phone:3,clothes:0,bank:0},cloud:{url:'',key:''},appearance:{theme:'christmas',mode:'light',effects:true},interest:{aer:2.8,posted:{}},push:{endpoint:'',publicKey:''}};
+const DEFAULT={balances:{bank:143.92,kenya:45,phone:0,resale:10,clothes:5,cash:60},goals:{kenya:200,phone:120,resale:50},transactions:[],sundayCount:0,allocation:{kenya:2,resale:5,phone:3,clothes:0,bank:0},cloud:{url:'',key:''},appearance:{theme:'christmas',mode:'light',effects:true},interest:{aer:2.8,posted:{}},push:{endpoint:'https://money-plan-notifications.oobayoopa.workers.dev',publicKey:''}};
 let state;try{state={...DEFAULT,...JSON.parse(localStorage.getItem('moneyPlan')||'{}')};state.balances={...DEFAULT.balances,...state.balances};state.goals={...DEFAULT.goals,...state.goals};state.appearance={...DEFAULT.appearance,...state.appearance};state.allocation={...DEFAULT.allocation,...state.allocation};state.interest={...DEFAULT.interest,...state.interest};state.push={...DEFAULT.push,...state.push};}catch{state=structuredClone(DEFAULT)}
 const pots=[['bank','Main bank'],['kenya','Kenya'],['phone','iPhone'],['resale','Reselling'],['clothes','Own clothes'],['cash','Cash on hand']];
 const $=id=>document.getElementById(id),fmt=n=>'£'+Number(n||0).toFixed(2),now=()=>new Date().toISOString();
@@ -240,7 +240,7 @@ $('checkUpdate').onclick=async()=>{if(!swReg){$('updateStatus').textContent='upd
 $('applyUpdate').onclick=()=>{if(swReg?.waiting)swReg.waiting.postMessage({type:'SKIP_WAITING'})};
 function urlBase64ToUint8Array(base64){const padding='='.repeat((4-base64.length%4)%4);const raw=atob((base64+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
 async function enablePush(){
- const status=$('pushStatus');const endpoint=$('pushEndpoint').value.trim().replace(/\/$/,'');const key=$('pushKey').value.trim();
+ const status=$('pushStatus');const endpoint=$('pushEndpoint').value.trim().replace(/\/$/,'');let key=$('pushKey').value.trim();if(endpoint&&!key){try{const r=await fetch(endpoint+'/public-key');if(r.ok){key=(await r.json()).publicKey;$('pushKey').value=key}}catch{}}
  if(!endpoint.startsWith('https://')||!key){status.textContent='enter your HTTPS push server URL and VAPID public key first.';return}
  if(!('PushManager'in window)||!('Notification'in window)||!swReg){status.textContent='push is not supported here. install the app on android and try again.';return}
  try{
@@ -255,7 +255,7 @@ async function enablePush(){
 async function disablePush(){
  try{const sub=await swReg?.pushManager.getSubscription();if(sub){const endpoint=state.push?.endpoint;if(endpoint){await fetch(endpoint+'/unsubscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})}).catch(()=>{})}await sub.unsubscribe()}state.push={endpoint:'',publicKey:''};persist();$('pushStatus').textContent='push disabled on this device.'}catch(e){$('pushStatus').textContent=e.message}
 }
-$('pushEndpoint').value=state.push.endpoint||'';$('pushKey').value=state.push.publicKey||'';
+$('pushEndpoint').value=state.push.endpoint||'https://money-plan-notifications.oobayoopa.workers.dev';$('pushKey').value=state.push.publicKey||'';
 $('enableNotifications').onclick=enablePush;$('disableNotifications').onclick=disablePush;
 
 

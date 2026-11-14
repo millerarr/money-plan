@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#142b43"><meta name="description" content="A personal money and savings dashboard.">
-<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg">
+<link rel="manifest" href="./manifest.webmanifest?v=6"><link rel="icon" type="image/svg+xml" href="./icon.svg?v=6"><link rel="apple-touch-icon" href="./icon-192.png?v=6">
 <title>Money Plan</title>
 <style>
 :root{--navy:#142b43;--navy2:#203c59;--ink:#182535;--muted:#738195;--line:#e3e9ef;--bg:#f4f7fa;--white:#fff;--green:#16845d;--red:#b34b45;--soft:#edf3f8}
@@ -11,7 +11,7 @@
 header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:white;padding:22px max(18px,calc((100% - 1120px)/2));padding-top:max(22px,env(safe-area-inset-top))}
 header .top{display:flex;align-items:center;justify-content:space-between;gap:14px}h1{font-size:25px;margin:0}header p{margin:4px 0 0;color:#d4dfeb;font-size:13px}
 main{max-width:1120px;margin:20px auto;padding:0 14px 42px;display:grid;gap:15px}
-nav{display:flex;gap:7px;flex-wrap:wrap;margin-top:17px}nav button{background:#ffffff20;color:#fff;border:1px solid #ffffff25;padding:8px 12px}nav button.active{background:white;color:var(--navy)}
+.head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.appearance-shortcut{background:#fff;color:#a9152b;border:1px solid #ffffffaa;padding:9px 12px}nav{display:flex;gap:7px;flex-wrap:wrap;margin-top:17px}nav button{background:#ffffff20;color:#fff;border:1px solid #ffffff25;padding:8px 12px}nav button.active{background:white;color:var(--navy)}
 button{border:0;border-radius:10px;padding:10px 14px;background:var(--navy);color:white;font:inherit;font-weight:650;cursor:pointer}button.secondary{background:var(--soft);color:var(--navy)}button.warn{background:#fff0ed;color:var(--red)}button:disabled{opacity:.5;cursor:not-allowed}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card,.panel{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 2px 9px #142b4308}
 .metric{font-size:25px;font-weight:780;letter-spacing:-.5px;margin:6px 0}.muted{color:var(--muted);font-size:12px}.small{font-size:13px}h2{font-size:17px;margin:0 0 13px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.layout{display:grid;gap:15px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -64,7 +64,7 @@ body[data-theme="arsenal"] main:before{content:"ARSENAL  •  NORTH LONDON";disp
 
 </style></head>
 <body>
-<header><div class="top"><div><h1>💷 money plan</h1><p>your money, organised.</p></div><span class="pill" id="syncPill">device only</span></div>
+<header><div class="top"><div><h1>💷 money plan</h1><p>your money, organised.</p></div><div class="head-actions"><button type="button" class="appearance-shortcut" id="openAppearance">🎨 appearance</button><span class="pill" id="syncPill">device only</span></div></div>
 <nav><button class="active" data-view="overview">overview</button><button data-view="activity">activity</button><button data-view="budgets">pots & budgets</button><button data-view="settings">settings</button></nav></header>
 <main>
 <section class="view" id="overview">
@@ -154,7 +154,9 @@ function saveBalances(){pots.forEach(([k])=>{let v=Number($('bal_'+k).value);if(
 function makeInputs(){$('balanceInputs').innerHTML=pots.map(([k,n])=>`<div><label>${n} (£)</label><input type="number" min="0" step=".01" id="bal_${k}" value="${state.balances[k]}"></div>`).join('')+[['phone','iPhone goal'],['kenya','Kenya goal'],['resale','Reselling target']].map(([k,n])=>`<div><label>${n} (£)</label><input type="number" min="1" step="1" id="goal_${k}" value="${state.goals[k]}"></div>`).join('')}
 function download(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download='money-plan-backup.json';a.click();URL.revokeObjectURL(u)}
 async function cloudSync(){if(!state.cloud.url||!state.cloud.key){$('cloudStatus').textContent='add your Supabase URL and publishable key first.';return}if(!window.supabase){$('cloudStatus').textContent='cloud library could not load. check your internet connection.';return}try{let client=window.supabase.createClient(state.cloud.url,state.cloud.key);let {data:{user},error}=await client.auth.getUser();if(error||!user){$('cloudStatus').textContent='sign-in is not configured yet. finish Supabase Auth setup before syncing.';return}$('cloudStatus').textContent='signed in, but database sync endpoint still needs to be configured for your project.';}catch(e){$('cloudStatus').textContent='could not connect: '+e.message}}
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==b.dataset.view));if(b.dataset.view==='budgets')makeInputs();});
+function showView(name){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===name));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==name));if(name==='budgets')makeInputs();if(name==='settings')applyAppearance()}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+$('openAppearance').onclick=()=>showView('settings');
 document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>document.querySelector('[data-view="'+b.dataset.goto+'"]').click());
 $('sunday').onclick=sunday;$('quickMove').onclick=()=>move($('quickFrom').value,$('quickTo').value,Math.round(Number($('quickAmount').value)*100)/100);
 $('addManual').onclick=addManual;$('saveBalances').onclick=saveBalances;$('filter').onchange=drawTransactions;$('search').oninput=drawTransactions;
@@ -164,5 +166,5 @@ $('cloudSync').onclick=cloudSync;$('reset').onclick=()=>{if(confirm('reset all a
 document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>setTheme(b.dataset.themeChoice));
 $('lightMode').onclick=()=>setMode('light');$('darkMode').onclick=()=>setMode('dark');
 selectPots('quickFrom');selectPots('quickTo');selectPots('manualPot');$('quickFrom').value='bank';$('quickTo').value='kenya';render();makeInputs();applyAppearance();
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
 </script></body></html>
